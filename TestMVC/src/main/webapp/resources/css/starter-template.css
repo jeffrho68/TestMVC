@@ -1,6 +1,23 @@
 body {
   padding-top: 50px;
 }
+
+/* BEGIN: Styles to Prevent scrollbar being shown*/
+body.modal-open {
+	margin-right: 0;
+	overflow: hidden;
+}
+
+.modal {
+	overflow: hidden;
+	overflow-y: hidden;
+}
+
+.modal-open .navbar-fixed-top {
+	margin-right: 0;
+}
+/* END */
+
 .starter-template {
   padding: 40px 15px;
   text-align: center;
