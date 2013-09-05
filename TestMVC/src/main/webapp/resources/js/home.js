@@ -13,7 +13,8 @@ var Home = function ($) {
 		//about navbar click handler
 		$('#about').click(function () {
 			$('#aboutModal').modal('show');
-			$('#navmain').collapse('hide');  
+			//Close the navbar dropdown menu (shown if on a small screen)
+			$('button.navbar-toggle').click();
 		});
 		
     };
