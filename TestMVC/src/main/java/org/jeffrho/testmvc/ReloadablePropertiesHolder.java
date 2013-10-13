@@ -25,10 +25,10 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 	private PropertiesPersister propertiesPersister = new DefaultPropertiesPersister();
 	
 	//Number of milliseconds to check cache for refresh
-	int checkCacheMillis = -1;
+	private int checkCacheMillis = -1;
 	
 	//Cache of properties files
-	ConcurrentHashMap<String, CacheEntry> propertiesCache = 
+	private ConcurrentHashMap<String, CacheEntry> propertiesCache = 
 			new ConcurrentHashMap<String,CacheEntry>();
 	
 	
@@ -46,7 +46,6 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 	{
 		this.checkCacheMillis = checkCacheSeconds * 1000;
 	}
-	
 		
 	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader)
@@ -54,7 +53,7 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 		this.resourceLoader = resourceLoader;
 	}
 	
-	protected Properties getProperties(String alias)
+	public Properties getProperties(String alias)
 	{
 				
 		CacheEntry ce = this.propertiesCache.get(alias);
@@ -66,6 +65,11 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 		
 		String fileName = this.propertyFileLocations.get(alias);
 		return refreshProperties(alias, fileName, ce);
+	}
+	
+	public void clearCache()
+	{
+		this.propertiesCache.clear();
 	}
 	
 	protected Properties refreshProperties(String alias, String fileName, CacheEntry ce)
@@ -151,8 +155,11 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 		private long fileTimestamp = -1;
 		private long refreshTimestamp = -1;
 		
+		//Create an empty properties file. This is used if the property file
+		//cannot be loaded from the resource.
 		public CacheEntry()
 		{
+			this.props = new Properties();
 		}
 		
 		public CacheEntry(Properties props, long fileTimestamp)

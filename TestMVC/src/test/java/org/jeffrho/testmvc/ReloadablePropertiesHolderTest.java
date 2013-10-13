@@ -36,14 +36,20 @@ public class ReloadablePropertiesHolderTest
 		val = props2.getProperty("test2.key2");
 		assertEquals("value2", val);
 		
-		//Non-existent properties file, should return null
+		//Non-existent properties file, should return empty properties
 		Properties props3 = rph.getProperties("test3");
-		assertNull(props3);
-		
-		//Should get from cache
+		assertNotNull(props3);
+		assertTrue(props3.isEmpty());
+				
+		//Should get Properties object from cache
 		Properties prop1Cached = rph.getProperties("test1");
 		assertEquals(prop1Cached, props1);
-			
+		
+		//Clear the cache and get props1 again, should load properties
+		rph.clearCache();
+		props1 = rph.getProperties("test1");
+		assertFalse(props1 == prop1Cached);
+		
 	}
 
 }
