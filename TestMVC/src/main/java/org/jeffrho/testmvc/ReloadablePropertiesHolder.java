@@ -2,7 +2,6 @@ package org.jeffrho.testmvc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,11 +17,9 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 	
 	private ResourceLoader resourceLoader; 
 	
-	//List of property files to load
-	List<String> propertyFileLocations;
-	
-	//TODO: Change this to a map and use the key as the key in the cache.  
-	//Map<String, String> propertyFileLocations;
+	//Map of properties files to load. The key is the alias used to
+	//retrieve the Properties object.  
+	Map<String, String> propertyFileLocations;
 	
 	//Spring's property persister
 	private PropertiesPersister propertiesPersister = new DefaultPropertiesPersister();
@@ -35,7 +32,7 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 			new ConcurrentHashMap<String,CacheEntry>();
 	
 	
-	public void setPropertyFileLocations(List<String> propertyFileLocations)
+	public void setPropertyFileLocations(Map<String, String> propertyFileLocations)
 	{
 		if(propertyFileLocations == null || propertyFileLocations.isEmpty())
 		{
@@ -57,27 +54,33 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 		this.resourceLoader = resourceLoader;
 	}
 	
-	protected Properties getProperties(String fileName)
+	protected Properties getProperties(String alias)
 	{
-		CacheEntry ce = this.propertiesCache.get(fileName);
+				
+		CacheEntry ce = this.propertiesCache.get(alias);
 		if( ce != null && (ce.getRefreshTimestamp() < 0 ||
 				ce.getRefreshTimestamp() > ce.getRefreshTimestamp() - this.checkCacheMillis ) )
 		{
 			return ce.getProperties();
 		}
 		
-		return refreshProperties(fileName, ce);
+		String fileName = this.propertyFileLocations.get(alias);
+		return refreshProperties(alias, fileName, ce);
 	}
 	
-	protected Properties refreshProperties(String fileName, CacheEntry ce)
+	protected Properties refreshProperties(String alias, String fileName, CacheEntry ce)
 	{
 		long refreshTimestamp = (this.checkCacheMillis < 0 ? -1 : System.currentTimeMillis());
-		Resource res = resourceLoader.getResource(fileName);
+		Resource res = null;
+		if(fileName != null)
+		{
+			res = resourceLoader.getResource(fileName);
+		}
 		
-		if(res.exists())
+		if(res!= null && res.exists())
 		{
 			long fileTimestamp = -1;
-			if (this.checkCacheMillis >= 0)
+			if (this.checkCacheMillis >= 0) 
 			{
 				try
 				{
@@ -113,7 +116,7 @@ public class ReloadablePropertiesHolder implements ResourceLoaderAware
 		}
 		
 		ce.setRefreshTimestamp(refreshTimestamp);
-		propertiesCache.put(fileName, ce);
+		propertiesCache.put(alias, ce);
 		
 		return ce.getProperties();
 	}
